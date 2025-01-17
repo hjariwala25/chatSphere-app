@@ -7,7 +7,7 @@ router.get("/", (req, res) => {
   res.send("Auth route working");
 });
 
-router.post("/signup", signup);
+router.route("/signup").post(signup);
 
 router.post("/login", login);
 
