@@ -3,6 +3,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/gentoken.js";
+import { cloudinary } from "../utils/cloudinary.js";
 
 export const signup = async (req, res) => {
   try {
@@ -124,6 +125,52 @@ export const logout = async (req, res) => {
     return res
       .status(500)
       .json(new ApiError(500, "Internal server error", [error.message]));
+  }
+};
 
+export const updateProfile = async (req, res) => {
+  try {
+    const { profilePic } = req.body;
+    const userId = req.user._id;
+
+    if (!profilePic) {
+      throw new ApiError(400, "Profile picture is required");
+    }
+
+    const uploadPicture = await cloudinary.uploader.upload(profilePic);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { profilePic: uploadPicture.secure_url },
+      { new: true }
+    );
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, updatedUser, "Profile updated successfully"));
+  } catch (error) {
+    console.error("Error in updateProfile controller", error.message);
+    if (error instanceof ApiError) {
+      return res.status(error.statusCode).json({
+        statusCode: error.statusCode,
+        message: error.message,
+        success: false,
+        errors: error.errors,
+      });
+    }
+    return res
+      .status(500)
+      .json(new ApiError(500, "Internal server error", [error.message]));
+  }
+};
+
+export const checkAuth = (req, res) => {
+  try {
+    res.status(200).json(req.user);
+  } catch (error) {
+    console.error("Error in checkAuth controller", error.message);
+    return res
+      .status(500)
+      .json(new ApiError(500, "Internal server error", [error.message]));
   }
 };
