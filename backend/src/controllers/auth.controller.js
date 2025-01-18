@@ -7,7 +7,7 @@ import { generateToken } from "../utils/gentoken.js";
 export const signup = async (req, res) => {
   try {
     const { fullName, email, password } = req.body;
-    console.log("Request body", req.body);
+    // console.log("Request body", req.body);
 
     if (!fullName || !email || !password) {
       throw new ApiError(400, "All fields are required");
@@ -72,9 +72,58 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  res.send("Login route");
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw new ApiError(404, "Invalid credentials");
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordCorrect) {
+      throw new ApiError(404, "Invalid credentials");
+    }
+
+    generateToken(user._id, res);
+
+    return res.status(200).json(
+      new ApiResponse(200, {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        profilePic: user.profilePic,
+      })
+    );
+  } catch (error) {
+    console.error("Error in login controller", error.message);
+    if (error instanceof ApiError) {
+      return res.status(error.statusCode).json({
+        statusCode: error.statusCode,
+        message: error.message,
+        success: false,
+        errors: error.errors,
+      });
+    }
+    return res
+      .status(500)
+      .json(new ApiError(500, "Internal server error", [error.message]));
+  }
 };
 
 export const logout = async (req, res) => {
-  res.send("Logout route");
+  try {
+    res.cookie("jwt", "", { maxAge: 0 });
+    return res
+      .status(200)
+      .json(new ApiResponse(200, null, "User logged out successfully  "));
+  } catch (error) {
+    console.error("Error in logout controller", error.message);
+    return res
+      .status(500)
+      .json(new ApiError(500, "Internal server error", [error.message]));
+
+  }
 };

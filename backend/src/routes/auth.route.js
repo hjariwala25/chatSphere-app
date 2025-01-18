@@ -9,8 +9,8 @@ router.get("/", (req, res) => {
 
 router.route("/signup").post(signup);
 
-router.post("/login", login);
+router.route("/login").post(login);
 
-router.post("/logout", logout);
+router.route("/logout").post(logout);
 
 export default router;
