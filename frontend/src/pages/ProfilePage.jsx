@@ -1,7 +1,8 @@
-const ProfilePage = () => {
-  return (
-    <div>ProfilePage</div>
-  )
-}
+// import { useAuthStore } from "../store/authStore";
 
-export default ProfilePage
+const ProfilePage = () => {
+  // const { authUser } = useAuthStore();
+  return <div>ProfilePage</div>;
+};
+
+export default ProfilePage;
