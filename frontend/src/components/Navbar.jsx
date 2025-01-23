@@ -15,7 +15,7 @@ const Navbar = () => {
               <h1 className="text-lg font-bold">ChatSphere</h1>
             </Link>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
           <Link
               to={"/settings"}
               className={`
