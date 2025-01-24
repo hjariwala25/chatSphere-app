@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MessageCircle } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 
 const AuthImagePattern = ({ title, subtitle }) => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
@@ -37,7 +37,7 @@ const AuthImagePattern = ({ title, subtitle }) => {
                 ${i % 2 === 0 ? "animate-pulse" : ""}
               `}
             >
-              <MessageCircle
+              <MessageSquare
                 className={`
                   absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
                   w-6 h-6 opacity-0 group-hover:opacity-70
