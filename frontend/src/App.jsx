@@ -8,10 +8,13 @@ import ProfilePage from "./pages/ProfilePage";
 import { useAuthStore } from "./store/useAuthStore";
 import { useEffect } from "react";
 import { Loader } from "lucide-react";
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
+import { useThemeStore } from "./store/useThemeStore";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
+
+  const { theme } = useThemeStore();
 
   useEffect(() => {
     checkAuth();
@@ -27,7 +30,7 @@ const App = () => {
     );
 
   return (
-    <div>
+    <div data-theme={theme}>
       <Navbar />
 
       <Routes>
@@ -50,40 +53,49 @@ const App = () => {
         />
       </Routes>
       <Toaster
-  position="top-right"
-  reverseOrder={false}
-  gutter={12}
-  containerStyle={{ top: 30, right: 50 }}
-  toastOptions={{
-    duration: 4000,
-    style: {
-      background: '#FFFFFF',
-      color: '#1F2937',
-      border: '2px solid transparent',
-      boxShadow: '0 12px 24px -6px rgba(0, 0, 0, 0.15)',
-      borderRadius: '12px',
-      padding: '12px 16px',
-      fontSize: '14px',
-      fontWeight: '500',
-      maxWidth: '380px',
-    },
-    success: {
-      iconTheme: { primary: '#059669', secondary: '#FFFFFF' },
-      style: { background: '#059669', color: '#FFFFFF', border: '2px solid #047857' },
-    },
-    error: {
-      iconTheme: { primary: '#FFFFFF', secondary: '#EF4444' },
-      style: { background: '#EF4444', color: '#FFFFFF', border: '2px solid #DC2626' },
-    },
-    loading: {
-      iconTheme: { primary: '#6366F1', secondary: '#FFFFFF' },
-      style: { background: '#6366F1', color: '#FFFFFF', border: '2px solid #4F46E5' },
-    }
-  }}
-/>
-
-
-
+        position="top-right"
+        reverseOrder={false}
+        gutter={12}
+        containerStyle={{ top: 30, right: 50 }}
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: "#FFFFFF",
+            color: "#1F2937",
+            border: "2px solid transparent",
+            boxShadow: "0 12px 24px -6px rgba(0, 0, 0, 0.15)",
+            borderRadius: "12px",
+            padding: "12px 16px",
+            fontSize: "14px",
+            fontWeight: "500",
+            maxWidth: "380px",
+          },
+          success: {
+            iconTheme: { primary: "#059669", secondary: "#FFFFFF" },
+            style: {
+              background: "#059669",
+              color: "#FFFFFF",
+              border: "2px solid #047857",
+            },
+          },
+          error: {
+            iconTheme: { primary: "#FFFFFF", secondary: "#EF4444" },
+            style: {
+              background: "#EF4444",
+              color: "#FFFFFF",
+              border: "2px solid #DC2626",
+            },
+          },
+          loading: {
+            iconTheme: { primary: "#6366F1", secondary: "#FFFFFF" },
+            style: {
+              background: "#6366F1",
+              color: "#FFFFFF",
+              border: "2px solid #4F46E5",
+            },
+          },
+        }}
+      />
     </div>
   );
 };
