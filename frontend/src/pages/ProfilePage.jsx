@@ -9,45 +9,54 @@ const ProfilePage = () => {
   const [error, setError] = useState(null);
 
   const handleImageUpload = async (e) => {
-    try{
-    const file = e.target.files[0];
-    if (!file) return;
+    try {
+      const file = e.target.files[0];
+      if (!file) return;
 
-    setError(null);
+      setError(null);
 
-    // file size max 5MB
-    if (file.size > 5 * 1024 * 1024) {
-      setError("Image size should be less than 5MB");
-      return;
-    }
-
-    const options = {
-      maxSizeMB: 1,
-      maxWidthOrHeight: 1024,
-      useWebWorker: true
-    };
-    const compressedFile = await imageCompression(file, options);
-      
-
-
-    const reader = new FileReader();
-
-    reader.readAsDataURL(compressedFile);
-
-    reader.onload = async () => {
-      const base64Image = reader.result;
-      setSelectedImg(base64Image);
-      try{
-        await updateProfile({ profilePic: base64Image });
-      }catch(error){
-        setError("Failed to upload image");
-        setSelectedImg(null);
+      const validTypes = ["image/jpeg", "image/png", "image/webp"];
+      if (!validTypes.includes(file.type)) {
+        setError("Please upload a valid image (JPEG, PNG or WEBP)");
+        return;
       }
-    };
-  }catch (error) {
-    setError("Error processing image. Please try again.");
-  }
-};
+
+      // Image compression options
+      const options = {
+        maxSizeMB: 0.3,
+        maxWidthOrHeight: 800,
+        useWebWorker: true,
+        initialQuality: 0.7,
+        fileType: "image/jpeg",
+      };
+
+      const compressedFile = await imageCompression(file, options);
+      // console.log('Original size:', file.size / 1024, 'KB');
+      // console.log('Compressed size:', compressedFile.size / 1024, 'KB');
+
+      if (compressedFile.size > 1 * 1024 * 1024) {
+        setError("Image still too large after compression");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.readAsDataURL(compressedFile);
+
+      reader.onload = async () => {
+        try {
+          setSelectedImg(reader.result);
+          await updateProfile({ profilePic: reader.result });
+        } catch (error) {
+          console.error("Upload error:", error);
+          setError(error.response?.data?.message || "Failed to upload image");
+          setSelectedImg(null);
+        }
+      };
+    } catch (error) {
+      console.error("Image processing error:", error);
+      setError("Error processing image");
+    }
+  };
 
   return (
     <div className="h-screen pt-20">
@@ -74,7 +83,9 @@ const ProfilePage = () => {
                   bg-base-content hover:scale-105
                   p-2 rounded-full cursor-pointer 
                   transition-all duration-200
-                  ${isUpdatingProfile ? "animate-pulse pointer-events-none" : ""}
+                  ${
+                    isUpdatingProfile ? "animate-pulse pointer-events-none" : ""
+                  }
                 `}
               >
                 <Camera className="w-5 h-5 text-base-200" />
@@ -89,17 +100,23 @@ const ProfilePage = () => {
               </label>
             </div>
             <p className="text-sm text-zinc-400">
-              {isUpdatingProfile ? "Uploading..." : "Click the camera icon to update your photo"}
+              {isUpdatingProfile
+                ? "Uploading..."
+                : "Click the camera icon to update your photo"}
             </p>
           </div>
-
+          {error && (
+            <div className="text-error text-sm text-center">{error}</div>
+          )}
           <div className="space-y-6">
             <div className="space-y-1.5">
               <div className="text-sm text-zinc-400 flex items-center gap-2">
                 <User className="w-4 h-4" />
                 Full Name
               </div>
-              <p className="px-4 py-2.5 bg-base-200 rounded-lg border">{authUser?.fullName}</p>
+              <p className="px-4 py-2.5 bg-base-200 rounded-lg border">
+                {authUser?.fullName}
+              </p>
             </div>
 
             <div className="space-y-1.5">
@@ -107,7 +124,9 @@ const ProfilePage = () => {
                 <Mail className="w-4 h-4" />
                 Email Address
               </div>
-              <p className="px-4 py-2.5 bg-base-200 rounded-lg border">{authUser?.email}</p>
+              <p className="px-4 py-2.5 bg-base-200 rounded-lg border">
+                {authUser?.email}
+              </p>
             </div>
           </div>
 
