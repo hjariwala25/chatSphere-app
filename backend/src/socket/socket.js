@@ -1,33 +1,50 @@
 import { Server } from "socket.io";
 
-const configureSocket = (server) => {
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173",
-  },
-});
-
-//to store online user
 const userSocketMap = {};
+let io; 
 
-io.on("connection", (socket) => {
-  console.log("A user connected", socket.id);
+function getReceiverSocketId(userId) {
+  return userSocketMap[userId];
+}
 
-  const userId = socket.handshake.query.userId;
-  if(userId) userSocketMap[userId] = socket.id;
-
-    //send online users to all clients
-    io.emit("getOnlineUsers", Object.keys(userSocketMap));
-  
-
-  socket.on("disconnect", () => {
-    console.log("A user disconnected", socket.id);
-    delete userSocketMap[userId];
-    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+const configureSocket = (server) => {
+  io = new Server(server, {
+    cors: {
+      origin: "http://localhost:5173",
+      credentials: true
+    },
+    pingTimeout: 60000
   });
-});
 
-return io;
+  io.on("connection", (socket) => {
+    console.log("A user connected", socket.id);
+  
+    const userId = socket.handshake.query.userId;
+    if (userId) {
+      userSocketMap[userId] = socket.id;
+      io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    }
+  
+    socket.on("sendMessage", (message) => {
+      const receiverSocketId = getReceiverSocketId(message.receiverId);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("newMessage", message);
+      }
+    });
+  
+    socket.on("disconnect", () => {
+      console.log("A user disconnected", socket.id);
+      const userId = Object.keys(userSocketMap).find(
+        (key) => userSocketMap[key] === socket.id
+      );
+      if (userId) {
+        delete userSocketMap[userId];
+        io.emit("getOnlineUsers", Object.keys(userSocketMap));
+      }
+    });
+  });
+
+  return io;
 };
 
-export { configureSocket };
+export { configureSocket, getReceiverSocketId, io };

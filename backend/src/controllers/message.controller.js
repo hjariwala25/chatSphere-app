@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Message } from "../models/message.model.js";
 import { cloudinary } from "../utils/cloudinary.js";
+import { getReceiverSocketId, io } from "../socket/socket.js";
 
 export const getUsersForSidebar = async (req, res) => {
   try {
@@ -82,6 +83,12 @@ export const sendMessages = async (req, res) => {
     });
 
     await newMessage.save();
+
+    const receiverSocketId = getReceiverSocketId(receiverId);
+
+    if(receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", newMessage);
+    }
 
     return res.status(201).json(new ApiResponse(201, newMessage));
   } catch (error) {

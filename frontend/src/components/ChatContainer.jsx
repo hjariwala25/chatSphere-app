@@ -7,15 +7,23 @@ import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { formatMessageTime } from "../lib/utils";
 
 const ChatContainer = () => {
-  const { messages, selectedUser, getMessages, isMessagesLoading } =
-    useChatStore();
+  const {
+    messages,
+    selectedUser,
+    getMessages,
+    isMessagesLoading,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  } = useChatStore();
   const { authUser } = useAuthStore();
 
   useEffect(() => {
     if (selectedUser?._id) {
       getMessages(selectedUser._id);
+      subscribeToMessages();
     }
-  }, [selectedUser, getMessages]);
+    return () => unsubscribeFromMessages();
+  }, [selectedUser, getMessages, subscribeToMessages, unsubscribeFromMessages]);
 
   if (!selectedUser) {
     return (
@@ -70,16 +78,14 @@ const ChatContainer = () => {
                 </time>
               </div>
               <div className="chat-bubble flex flex-col">
-                    {message.image && (
-                      <img
-                        src={message.image}
-                        alt="Attachment"
-                        className="sm:max-w-[200px] rounded-md mb-2"
-                      />
-                    )}
-                    {message.text && 
-                      <p>{message.text}</p>}
-                  
+                {message.image && (
+                  <img
+                    src={message.image}
+                    alt="Attachment"
+                    className="sm:max-w-[200px] rounded-md mb-2"
+                  />
+                )}
+                {message.text && <p>{message.text}</p>}
               </div>
             </div>
           ))
