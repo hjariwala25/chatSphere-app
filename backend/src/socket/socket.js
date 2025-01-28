@@ -13,33 +13,33 @@ const configureSocket = (server) => {
       origin: "http://localhost:5173",
       credentials: true
     },
-    pingTimeout: 60000
   });
 
   io.on("connection", (socket) => {
-    console.log("A user connected", socket.id);
-  
-    const userId = socket.handshake.query.userId;
-    if (userId) {
-      userSocketMap[userId] = socket.id;
-      io.emit("getOnlineUsers", Object.keys(userSocketMap));
-    }
-  
-    socket.on("sendMessage", (message) => {
-      const receiverSocketId = getReceiverSocketId(message.receiverId);
-      if (receiverSocketId) {
-        io.to(receiverSocketId).emit("newMessage", message);
+    console.log("New connection:", socket.id);
+
+    socket.on("setup", (userId) => {
+      if (!userId) return;
+      
+      // Remove old socket if exists
+      const existingSocketId = userSocketMap[userId];
+      if (existingSocketId && existingSocketId !== socket.id) {
+        io.sockets.sockets.get(existingSocketId)?.disconnect();
       }
+
+      userSocketMap[userId] = socket.id;
+      socket.userId = userId;
+
+      // Broadcast to all clients
+      io.emit("getOnlineUsers", Object.keys(userSocketMap));
+      socket.broadcast.emit("userConnected", userId);
     });
-  
+
     socket.on("disconnect", () => {
-      console.log("A user disconnected", socket.id);
-      const userId = Object.keys(userSocketMap).find(
-        (key) => userSocketMap[key] === socket.id
-      );
-      if (userId) {
-        delete userSocketMap[userId];
+      if (socket.userId) {
+        delete userSocketMap[socket.userId];
         io.emit("getOnlineUsers", Object.keys(userSocketMap));
+        socket.broadcast.emit("userDisconnected", socket.userId);
       }
     });
   });

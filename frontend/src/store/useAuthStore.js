@@ -83,20 +83,58 @@ export const useAuthStore = create((set, get) => ({
 
   connectSocket: () => {
     const { authUser } = get();
-    if (!authUser || get().socket?.connected) return;
-    const socket = io(BASE_URL,{
-      query: {
-        userId: authUser._id,
-      },
-    });
-    socket.connect();
-    set({ socket: socket });
+    if (!authUser) return;
 
-    socket.on("getOnlineUsers", (userIds) => {
-      set({ onlineUsers: userIds });
+    // Disconnect existing socket if any
+    const existingSocket = get().socket;
+    if (existingSocket) {
+      existingSocket.disconnect();
+    }
+
+    const socket = io(BASE_URL, {
+      query: { userId: authUser._id },
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5,
+      transports: ["websocket"]
     });
+
+    socket.on("connect", () => {
+      console.log("Socket connected!", socket.id);
+      // Emit setup event when connected
+      socket.emit("setup", authUser._id);
+    });
+
+    socket.on("getOnlineUsers", (users) => {
+      console.log("Online users:", users);
+      // Filter out current user from online users
+      const filteredUsers = users.filter(id => id !== authUser._id);
+      set({ onlineUsers: filteredUsers });
+    });
+
+    socket.on("userConnected", (userId) => {
+      set(state => ({
+        onlineUsers: [...new Set([...state.onlineUsers, userId])]
+      }));
+    });
+
+    socket.on("userDisconnected", (userId) => {
+      set(state => ({
+        onlineUsers: state.onlineUsers.filter(id => id !== userId)
+      }));
+    });
+
+    set({ socket });
   },
+
   disconnectSocket: () => {
-    if (get().socket?.connected) get().socket.disconnect();
-  },
+    const socket = get().socket;
+    if (socket) {
+      socket.off("getOnlineUsers");
+      socket.off("userConnected");
+      socket.off("userDisconnected");
+      socket.disconnect();
+      set({ socket: null, onlineUsers: [] });
+    }
+  }
 }));
