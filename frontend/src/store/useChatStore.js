@@ -71,21 +71,25 @@ export const useChatStore = create((set, get) => ({
   },  
    
   subscribeToMessages: () => {
-    const {selectedUser} = get();
-    if(!selectedUser?._id) return;
-
-    const socket = useAuthStore.getState().socket
-    if(!socket) return;
-
+    const { selectedUser } = get();
+    if (!selectedUser?._id) return;
+  
+    const socket = useAuthStore.getState().socket;
+    if (!socket) return;
+  
     socket.on("newMessage", (newMessage) => {
-      const isMessageSentBySelectedUser = newMessage.senderId === selectedUser._id;
-      if (!isMessageSentBySelectedUser) return
-      set((state) => ({
-        messages: {
-          ...state.messages,
-          data: [...(state.messages?.data || []), newMessage]
-        }
-      }));
+      const isChatParticipant = 
+        newMessage.senderId === selectedUser._id || 
+        newMessage.receiverId === selectedUser._id;
+  
+      if (isChatParticipant) {
+        set((state) => ({
+          messages: {
+            ...state.messages,
+            data: [...(state.messages?.data || []), newMessage]
+          }
+        }));
+      }
     });
   },
 

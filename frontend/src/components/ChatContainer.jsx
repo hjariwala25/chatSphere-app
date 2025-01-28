@@ -16,7 +16,6 @@ const ChatContainer = () => {
     unsubscribeFromMessages,
   } = useChatStore();
   const { authUser } = useAuthStore();
-
   const messageEndRef = useRef(null);
 
   useEffect(() => {
@@ -28,12 +27,15 @@ const ChatContainer = () => {
   }, [selectedUser, getMessages, subscribeToMessages, unsubscribeFromMessages]);
 
   useEffect(() => {
-    if (messageEndRef.current && messages){
-      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
+    const scrollToBottom = () => {
+      messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
 
-  
+    if (messages?.data?.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages?.data, selectedUser]);
+
   if (!selectedUser) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center">
@@ -43,7 +45,6 @@ const ChatContainer = () => {
       </div>
     );
   }
-
 
   if (isMessagesLoading) {
     return (
@@ -69,7 +70,6 @@ const ChatContainer = () => {
               className={`chat ${
                 message.senderId === authUser._id ? "chat-end" : "chat-start"
               }`}
-              ref={messageEndRef}
             >
               <div className="chat-image avatar">
                 <div className="size-10 rounded-full border">
@@ -98,6 +98,7 @@ const ChatContainer = () => {
                 )}
                 {message.text && <p>{message.text}</p>}
               </div>
+              <div ref={messageEndRef} />
             </div>
           ))
         ) : (
