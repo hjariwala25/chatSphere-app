@@ -16,20 +16,26 @@ const Sidebar = () => {
     getUsers();
   }, [getUsers]);
 
-  if (isUsersLoading) {
-    return <SidebarSkeleton />;
-  }
 
+  
+  
   //  users array data
   const usersList = Array.isArray(users?.data) ? users.data : [];
 
-  const filteredUsers = usersList.filter(user => {
-    const matchesSearch = searchQuery 
-      ? user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) 
-      : true;
-    const isOnline = showOnlineOnly ? onlineUsers.includes(user._id) : true;
-    return matchesSearch && isOnline;
-  });
+// First filter by online status
+let filteredUsers = showOnlineOnly 
+  ? usersList.filter(user => onlineUsers.includes(user._id))
+  : usersList;
+
+if (searchQuery) {
+  filteredUsers = filteredUsers.filter(user => 
+    user.fullName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+}
+
+  if (isUsersLoading) {
+    return <SidebarSkeleton />;
+  }
   return (
     <aside className="h-full w-20 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
       <div className="border-b border-base-300 w-full p-5">
@@ -52,7 +58,7 @@ const Sidebar = () => {
           </div>
         </div>
 
-        {/* TODO: Online filter toggle */}
+        {/* {show online only} */}
         <div className="mt-3 hidden lg:flex items-center gap-2">
           <label className="cursor-pointer flex items-center gap-2">
             <input

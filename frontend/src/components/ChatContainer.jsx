@@ -18,23 +18,25 @@ const ChatContainer = () => {
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
 
+  // Fetch messages when user selected
   useEffect(() => {
     if (selectedUser?._id) {
       getMessages(selectedUser._id);
-      subscribeToMessages();
     }
-    return () => unsubscribeFromMessages();
-  }, [selectedUser, getMessages, subscribeToMessages, unsubscribeFromMessages]);
+  }, [selectedUser?._id, getMessages]);
 
+  // Subscribe to new messages
   useEffect(() => {
-    const scrollToBottom = () => {
-      messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
-
-    if (messages?.data?.length > 0) {
-      scrollToBottom();
+    if (selectedUser?._id) {
+      subscribeToMessages();
+      return () => unsubscribeFromMessages();
     }
-  }, [messages?.data, selectedUser]);
+  }, [selectedUser?._id, subscribeToMessages, unsubscribeFromMessages]);
+
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages?.data]);
 
   if (!selectedUser) {
     return (
@@ -84,7 +86,7 @@ const ChatContainer = () => {
                 </div>
               </div>
               <div className="chat-header mb-1">
-                <time className="text-xm opacity-50 ml-1">
+                <time className="text-xs opacity-50 ml-1">
                   {formatMessageTime(message.createdAt)}
                 </time>
               </div>
@@ -98,7 +100,6 @@ const ChatContainer = () => {
                 )}
                 {message.text && <p>{message.text}</p>}
               </div>
-              <div ref={messageEndRef} />
             </div>
           ))
         ) : (
@@ -106,6 +107,7 @@ const ChatContainer = () => {
             No messages yet. Start a conversation!
           </div>
         )}
+        <div ref={messageEndRef} />
       </div>
 
       <MessageInput />

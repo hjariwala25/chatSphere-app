@@ -14,36 +14,38 @@ const configureSocket = (server) => {
       credentials: true
     },
   });
-
   io.on("connection", (socket) => {
     console.log("New connection:", socket.id);
 
     socket.on("setup", (userId) => {
       if (!userId) return;
-      
-      // Remove old socket if exists
+
+      // Clean up old socket
       const existingSocketId = userSocketMap[userId];
       if (existingSocketId && existingSocketId !== socket.id) {
-        io.sockets.sockets.get(existingSocketId)?.disconnect();
+        const existingSocket = io.sockets.sockets.get(existingSocketId);
+        if (existingSocket) {
+          existingSocket.disconnect();
+        }
+        delete userSocketMap[userId];
       }
 
-      userSocketMap[userId] = socket.id;
+      // Set up new socket
       socket.userId = userId;
+      userSocketMap[userId] = socket.id;
 
-      // Broadcast to all clients
+      // Emit to all clients including sender
       io.emit("getOnlineUsers", Object.keys(userSocketMap));
-      socket.broadcast.emit("userConnected", userId);
     });
 
     socket.on("disconnect", () => {
-      if (socket.userId) {
-        delete userSocketMap[socket.userId];
+      const userId = socket.userId;
+      if (userId && userSocketMap[userId] === socket.id) {
+        delete userSocketMap[userId];
         io.emit("getOnlineUsers", Object.keys(userSocketMap));
-        socket.broadcast.emit("userDisconnected", socket.userId);
       }
     });
   });
-
   return io;
 };
 

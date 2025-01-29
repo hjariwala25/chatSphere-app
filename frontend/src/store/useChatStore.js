@@ -30,7 +30,7 @@ export const useChatStore = create((set, get) => ({
       set({ messages: res.data });
     } catch (error) {
       console.error("Error fetching messages:", error);
-      set({ messages: { data: [] } }); // empty array
+      // set({ messages: { data: [] } }); // empty array
       toast.error(error?.response?.data?.message || "Failed to fetch messages");
     } finally {
       set({ isMessagesLoading: false });
@@ -53,18 +53,24 @@ export const useChatStore = create((set, get) => ({
 
       const newMessage = res.data.data;
       if (newMessage) {
-        set({ 
-          messages: { 
-            ...messages, 
-            data: [...(messages?.data || []), newMessage] 
-          } 
+        // Update messages immediately after sending
+        set({
+          messages: {
+            ...messages,
+            data: [...(messages?.data || []), newMessage]
+          }
         });
+
+        // Emit socket event if user is online
+        const socket = useAuthStore.getState().socket;
+        if (socket) {
+          socket.emit("newMessage", newMessage);
+        }
         return newMessage;
       }
     } catch (error) {
       console.error("Send message error:", error);
       toast.error("Failed to send message");
-      throw error;
     } finally {
       set({ isSendingMessage: false });
     }
@@ -95,7 +101,9 @@ export const useChatStore = create((set, get) => ({
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
-    socket.off("newMessage");
+    if (socket) {
+      socket.off("newMessage");
+    }
   },
 
   setSelectedUser: (selectedUser) => set({ selectedUser }),

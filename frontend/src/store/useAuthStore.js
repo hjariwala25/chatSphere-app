@@ -46,8 +46,10 @@ export const useAuthStore = create((set, get) => ({
     try {
       const res = await axiosInstance.post("/auth/login", data);
       set({ authUser: res.data });
+      setTimeout(() => {
+        get().connectSocket();
+      }, 100);
       toast.success("Logged in successfully");
-      get().connectSocket();
     } catch (error) {
       toast.error(error.response.data.message);
     } finally {
@@ -81,41 +83,49 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
+
+  
+
   connectSocket: () => {
     const { authUser } = get();
     if (!authUser) return;
 
-    // Disconnect existing socket if any
+    // Clean up existing socket
     const existingSocket = get().socket;
     if (existingSocket) {
       existingSocket.disconnect();
+      set({ socket: null });
     }
 
     const socket = io(BASE_URL, {
       query: { userId: authUser._id },
+      transports: ["websocket"],
       reconnection: true,
-      reconnectionDelay: 1000,
       reconnectionAttempts: 5,
-      transports: ["websocket"]
+      reconnectionDelay: 1000,
     });
+
+    let isConnected = false;
 
     socket.on("connect", () => {
       console.log("Socket connected!", socket.id);
-      // Emit setup event when connected
-      socket.emit("setup", authUser._id);
+      if (!isConnected) {
+        socket.emit("setup", authUser._id);
+        isConnected = true;
+      }
     });
 
     socket.on("getOnlineUsers", (users) => {
-      console.log("Online users:", users);
-      // Filter out current user from online users
       const filteredUsers = users.filter(id => id !== authUser._id);
       set({ onlineUsers: filteredUsers });
     });
 
     socket.on("userConnected", (userId) => {
-      set(state => ({
-        onlineUsers: [...new Set([...state.onlineUsers, userId])]
-      }));
+      if (userId !== authUser._id) {
+        set(state => ({
+          onlineUsers: Array.from(new Set([...state.onlineUsers, userId]))
+        }));
+      }
     });
 
     socket.on("userDisconnected", (userId) => {
@@ -125,6 +135,13 @@ export const useAuthStore = create((set, get) => ({
     });
 
     set({ socket });
+  },
+
+  getOnlineUsers: () => {
+    const socket = get().socket;
+    if (socket) {
+      socket.emit("getOnlineUsers");
+    }
   },
 
   disconnectSocket: () => {
