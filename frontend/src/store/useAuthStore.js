@@ -46,9 +46,8 @@ export const useAuthStore = create((set, get) => ({
     try {
       const res = await axiosInstance.post("/auth/login", data);
       set({ authUser: res.data });
-      setTimeout(() => {
-        get().connectSocket();
-      }, 100);
+      await get().connectSocket();
+
       toast.success("Logged in successfully");
     } catch (error) {
       toast.error(error.response.data.message);
@@ -83,20 +82,12 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-
-  
-
-  connectSocket: () => {
+  connectSocket: async () => {
     const { authUser } = get();
     if (!authUser) return;
-
-    // Clean up existing socket
-    const existingSocket = get().socket;
-    if (existingSocket) {
-      existingSocket.disconnect();
-      set({ socket: null });
-    }
-
+  
+    get().disconnectSocket();
+  
     const socket = io(BASE_URL, {
       query: { userId: authUser._id },
       transports: ["websocket"],
@@ -104,38 +95,24 @@ export const useAuthStore = create((set, get) => ({
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });
-
-    let isConnected = false;
-
-    socket.on("connect", () => {
-      console.log("Socket connected!", socket.id);
-      if (!isConnected) {
+  
+    return new Promise((resolve) => {
+      socket.on("connect", () => {
+        console.log("Socket connected!", socket.id);
         socket.emit("setup", authUser._id);
-        isConnected = true;
-      }
+        socket.emit("getOnlineUsers");
+        resolve();
+      });
+  
+      socket.on("getOnlineUsers", (users) => {
+        const filteredUsers = users.filter(id => id !== authUser._id);
+        set({ onlineUsers: filteredUsers });
+      });
+  
+      set({ socket });
     });
-
-    socket.on("getOnlineUsers", (users) => {
-      const filteredUsers = users.filter(id => id !== authUser._id);
-      set({ onlineUsers: filteredUsers });
-    });
-
-    socket.on("userConnected", (userId) => {
-      if (userId !== authUser._id) {
-        set(state => ({
-          onlineUsers: Array.from(new Set([...state.onlineUsers, userId]))
-        }));
-      }
-    });
-
-    socket.on("userDisconnected", (userId) => {
-      set(state => ({
-        onlineUsers: state.onlineUsers.filter(id => id !== userId)
-      }));
-    });
-
-    set({ socket });
   },
+
 
   getOnlineUsers: () => {
     const socket = get().socket;
@@ -153,5 +130,5 @@ export const useAuthStore = create((set, get) => ({
       socket.disconnect();
       set({ socket: null, onlineUsers: [] });
     }
-  }
+  },
 }));

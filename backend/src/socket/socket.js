@@ -6,14 +6,14 @@ let io;
 function getReceiverSocketId(userId) {
   return userSocketMap[userId];
 }
-
 const configureSocket = (server) => {
   io = new Server(server, {
     cors: {
       origin: "http://localhost:5173",
       credentials: true
-    },
+    }
   });
+
   io.on("connection", (socket) => {
     console.log("New connection:", socket.id);
 
@@ -34,18 +34,29 @@ const configureSocket = (server) => {
       socket.userId = userId;
       userSocketMap[userId] = socket.id;
 
-      // Emit to all clients including sender
+      // Broadcast online status immediately
       io.emit("getOnlineUsers", Object.keys(userSocketMap));
     });
 
+    socket.on("getOnlineUsers", () => {
+      io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    });
+
+    socket.on("sendMessage", (message) => {
+      const receiverSocketId = getReceiverSocketId(message.receiverId);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("newMessage", message);
+      }
+    });
+
     socket.on("disconnect", () => {
-      const userId = socket.userId;
-      if (userId && userSocketMap[userId] === socket.id) {
-        delete userSocketMap[userId];
+      if (socket.userId) {
+        delete userSocketMap[socket.userId];
         io.emit("getOnlineUsers", Object.keys(userSocketMap));
       }
     });
   });
+
   return io;
 };
 
