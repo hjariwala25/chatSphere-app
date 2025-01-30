@@ -6,22 +6,40 @@ import LoginPage from "./pages/LoginPage";
 import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
 import { useAuthStore } from "./store/useAuthStore";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import { useThemeStore } from "./store/useThemeStore";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
-
   const { theme } = useThemeStore();
+  const isInitialMount = useRef(true);
+  const previousAuthState = useRef(null);
 
-  console.log({ onlineUsers });
-
+  // initial auth check
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
+  // for login state change
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      previousAuthState.current = authUser;
+      return;
+    }
+
+    // only refresh when transitioning from logged out to logged in
+    if (!previousAuthState.current && authUser) {
+      previousAuthState.current = authUser;
+      checkAuth();
+    } else {
+      previousAuthState.current = authUser;
+    }
+  }, [authUser, checkAuth]);
+
+  console.log({ onlineUsers });
   console.log({ authUser });
 
   if (isCheckingAuth && !authUser)
@@ -34,7 +52,6 @@ const App = () => {
   return (
     <div data-theme={theme}>
       <Navbar />
-
       <Routes>
         <Route
           path="/"
