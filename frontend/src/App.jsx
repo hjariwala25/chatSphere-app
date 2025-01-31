@@ -10,6 +10,7 @@ import { useEffect, useRef } from "react";
 import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import { useThemeStore } from "./store/useThemeStore";
+import DynamicFavicon from "./components/DynamicFavicon";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
@@ -50,72 +51,75 @@ const App = () => {
     );
 
   return (
-    <div data-theme={theme}>
-      <Navbar />
-      <Routes>
-        <Route
-          path="/"
-          element={authUser ? <HomePage /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/signup"
-          element={!authUser ? <SignUpPage /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/login"
-          element={!authUser ? <LoginPage /> : <Navigate to="/" />}
-        />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route
-          path="/profile"
-          element={authUser ? <ProfilePage /> : <Navigate to="/login" />}
-        />
-      </Routes>
-      <Toaster
-        position="top-right"
-        reverseOrder={false}
-        gutter={12}
-        containerStyle={{ top: 30, right: 50 }}
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: "#FFFFFF",
-            color: "#1F2937",
-            border: "2px solid transparent",
-            boxShadow: "0 12px 24px -6px rgba(0, 0, 0, 0.15)",
-            borderRadius: "12px",
-            padding: "12px 16px",
-            fontSize: "14px",
-            fontWeight: "500",
-            maxWidth: "380px",
-          },
-          success: {
-            iconTheme: { primary: "#059669", secondary: "#FFFFFF" },
+    <>
+      <DynamicFavicon />
+      <div data-theme={theme}>
+        <Navbar />
+        <Routes>
+          <Route
+            path="/"
+            element={authUser ? <HomePage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/signup"
+            element={!authUser ? <SignUpPage /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/login"
+            element={!authUser ? <LoginPage /> : <Navigate to="/" />}
+          />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route
+            path="/profile"
+            element={authUser ? <ProfilePage /> : <Navigate to="/login" />}
+          />
+        </Routes>
+        <Toaster
+          position="top-right"
+          reverseOrder={false}
+          gutter={12}
+          containerStyle={{ top: 30, right: 50 }}
+          toastOptions={{
+            duration: 4000,
             style: {
-              background: "#059669",
-              color: "#FFFFFF",
-              border: "2px solid #047857",
+              background: "#FFFFFF",
+              color: "#1F2937",
+              border: "2px solid transparent",
+              boxShadow: "0 12px 24px -6px rgba(0, 0, 0, 0.15)",
+              borderRadius: "12px",
+              padding: "12px 16px",
+              fontSize: "14px",
+              fontWeight: "500",
+              maxWidth: "380px",
             },
-          },
-          error: {
-            iconTheme: { primary: "#FFFFFF", secondary: "#EF4444" },
-            style: {
-              background: "#EF4444",
-              color: "#FFFFFF",
-              border: "2px solid #DC2626",
+            success: {
+              iconTheme: { primary: "#059669", secondary: "#FFFFFF" },
+              style: {
+                background: "#059669",
+                color: "#FFFFFF",
+                border: "2px solid #047857",
+              },
             },
-          },
-          loading: {
-            iconTheme: { primary: "#6366F1", secondary: "#FFFFFF" },
-            style: {
-              background: "#6366F1",
-              color: "#FFFFFF",
-              border: "2px solid #4F46E5",
+            error: {
+              iconTheme: { primary: "#FFFFFF", secondary: "#EF4444" },
+              style: {
+                background: "#EF4444",
+                color: "#FFFFFF",
+                border: "2px solid #DC2626",
+              },
             },
-          },
-        }}
-      />
-    </div>
+            loading: {
+              iconTheme: { primary: "#6366F1", secondary: "#FFFFFF" },
+              style: {
+                background: "#6366F1",
+                color: "#FFFFFF",
+                border: "2px solid #4F46E5",
+              },
+            },
+          }}
+        />
+      </div>
+    </>
   );
 };
 
