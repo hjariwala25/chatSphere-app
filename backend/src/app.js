@@ -3,6 +3,7 @@ import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import path from "path";
 
 const app = express();
 
@@ -20,5 +21,14 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/messages", messageRoutes);
+
+// static files in production
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+  });
+}
 
 export { app };
