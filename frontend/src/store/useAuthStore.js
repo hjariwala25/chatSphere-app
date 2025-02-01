@@ -45,25 +45,52 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoggingIn: true });
     try {
       const res = await axiosInstance.post("/auth/login", data);
-      set({ authUser: res.data });
-      await get().connectSocket();
+      const userData = res.data;
+      
+      // Connect socket before updating auth state
+      const socket = io(BASE_URL, {
+        query: { userId: userData._id },
+        transports: ["websocket"],
+        reconnection: true,
+      });
+
+      await new Promise((resolve) => {
+        socket.on("connect", () => {
+          set({ socket });
+          resolve();
+        });
+      });
+
+      set({ 
+        authUser: userData,
+        isLoggingIn: false // Reset loading state after socket connection
+      });
 
       toast.success("Logged in successfully");
     } catch (error) {
-      toast.error(error.response.data.message);
-    } finally {
-      set({ isLoggingIn: false });
+      set({ isLoggingIn: false }); // Reset loading state on error
+      toast.error(error?.response?.data?.message || "Login failed");
     }
   },
 
   logout: async () => {
     try {
-      await axiosInstance.post("/auth/logout");
-      set({ authUser: null });
-      toast.success("Logged out successfully");
+      // Disconnect socket before logout
       get().disconnectSocket();
+      
+      await axiosInstance.post("/auth/logout");
+      
+      // Reset all states
+      set({ 
+        authUser: null,
+        isLoggingIn: false,
+        socket: null,
+        onlineUsers: []
+      });
+      
+      toast.success("Logged out successfully");
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error?.response?.data?.message || "Logout failed");
     }
   },
 
