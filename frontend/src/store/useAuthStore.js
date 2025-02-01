@@ -21,7 +21,7 @@ export const useAuthStore = create((set, get) => ({
       set({ authUser: res.data });
       get().connectSocket();
     } catch (error) {
-      console.log("Error in checkAuth", error);
+      console.log("Error in checkAuth", error.message);
       set({ authUser: null });
     } finally {
       set({ isCheckingAuth: false });
@@ -125,7 +125,7 @@ export const useAuthStore = create((set, get) => ({
   
     return new Promise((resolve) => {
       socket.on("connect", () => {
-        console.log("Socket connected!", socket.id);
+        // console.log("Socket connected!", socket.id);
         socket.emit("setup", authUser._id);
         socket.emit("getOnlineUsers");
         resolve();

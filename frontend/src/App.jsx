@@ -13,7 +13,7 @@ import { useThemeStore } from "./store/useThemeStore";
 import DynamicFavicon from "./components/DynamicFavicon";
 
 const App = () => {
-  const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
+  const { authUser, checkAuth, isCheckingAuth} = useAuthStore();
   const { theme } = useThemeStore();
   const isInitialMount = useRef(true);
   const previousAuthState = useRef(null);
@@ -40,8 +40,8 @@ const App = () => {
     }
   }, [authUser, checkAuth]);
 
-  console.log({ onlineUsers });
-  console.log({ authUser });
+  // console.log({ onlineUsers });
+  // console.log({ authUser });
 
   if (isCheckingAuth && !authUser)
     return (

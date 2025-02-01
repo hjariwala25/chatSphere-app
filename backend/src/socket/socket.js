@@ -15,7 +15,7 @@ const configureSocket = (server) => {
   });
 
   io.on("connection", (socket) => {
-    console.log("New connection:", socket.id);
+    // console.log("New connection:", socket.id);
 
     socket.on("setup", (userId) => {
       if (!userId) return;
