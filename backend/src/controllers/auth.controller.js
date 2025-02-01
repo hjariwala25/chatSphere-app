@@ -79,13 +79,13 @@ export const login = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      throw new ApiError(404, "Invalid credentials");
+      throw new ApiError(404, "Invalid user credentials");
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPasswordCorrect) {
-      throw new ApiError(404, "Invalid credentials");
+      throw new ApiError(404, "Invalid user credentials")
     }
 
     generateToken(user._id, res);
