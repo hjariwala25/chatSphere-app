@@ -6,7 +6,6 @@ import { Send } from "lucide-react";
 import toast from "react-hot-toast";
 import imageCompression from "browser-image-compression";
 
-
 const MessageInput = () => {
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
@@ -15,61 +14,61 @@ const MessageInput = () => {
   const { sendMessage, selectedUser } = useChatStore();
 
   //  compression options
-const compressImage = async (file) => {
-  const options = {
-    maxSizeMB: 0.5, // 500KB
-    maxWidthOrHeight: 800,
-    useWebWorker: true,
-    initialQuality: 0.7,
-    fileType: "image/jpeg"
-  };
-  try {
-    const compressedFile = await imageCompression(file, options);
-    if (compressedFile.size > 1 * 1024 * 1024) {
-      throw new Error("Image still too large after compression");
-    }
-    return compressedFile;
-  } catch (error) {
-    throw new Error("Error compressing image: " + error.message);
-  }
-};
-
-const handleImageChange = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  if (!file.type.startsWith("image/")) {
-    toast.error("Please select an image file");
-    return;
-  }
-
-  if (file.size > 5 * 1024 * 1024) {
-    toast.error("File size should be less than 5MB");
-    return;
-  }
-
-  try {
-    setIsSending(true);
-    const compressedFile = await compressImage(file);
-    const reader = new FileReader();
-    reader.readAsDataURL(compressedFile);
-    
-    reader.onload = () => {
-      const base64String = reader.result;
-      // Validate final size
-      if (base64String.length > 1024 * 1024) { 
-        toast.error("Image still too large after compression");
-        return;
-      }
-      setImagePreview(base64String);
+  const compressImage = async (file) => {
+    const options = {
+      maxSizeMB: 0.5, // 500KB
+      maxWidthOrHeight: 800,
+      useWebWorker: true,
+      initialQuality: 0.7,
+      fileType: "image/jpeg",
     };
-  } catch (error) {
-    console.error("Image processing error:", error);
-    toast.error(error.message || "Error processing image");
-  } finally {
-    setIsSending(false);
-  }
-};
+    try {
+      const compressedFile = await imageCompression(file, options);
+      if (compressedFile.size > 1 * 1024 * 1024) {
+        throw new Error("Image still too large after compression");
+      }
+      return compressedFile;
+    } catch (error) {
+      throw new Error("Error compressing image: " + error.message);
+    }
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size should be less than 5MB");
+      return;
+    }
+
+    try {
+      setIsSending(true);
+      const compressedFile = await compressImage(file);
+      const reader = new FileReader();
+      reader.readAsDataURL(compressedFile);
+
+      reader.onload = () => {
+        const base64String = reader.result;
+        // Validate final size
+        if (base64String.length > 1024 * 1024) {
+          toast.error("Image still too large after compression");
+          return;
+        }
+        setImagePreview(base64String);
+      };
+    } catch (error) {
+      console.error("Image processing error:", error);
+      toast.error(error.message || "Error processing image");
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const removeImage = () => {
     setImagePreview(null);
@@ -78,7 +77,7 @@ const handleImageChange = async (e) => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    
+
     if (!selectedUser) {
       toast.error("Please select a user to send message");
       return;
@@ -98,7 +97,7 @@ const handleImageChange = async (e) => {
       };
 
       const response = await sendMessage(messageData);
-      
+
       if (response) {
         setText("");
         setImagePreview(null);
@@ -144,12 +143,12 @@ const handleImageChange = async (e) => {
           className="hidden"
           accept="image/*"
         />
-        
+
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className={`hidden sm:flex btn btn-circle
-            ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
+          className={`btn btn-circle btn-sm
+    ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
         >
           <Image className="size-5" />
         </button>
@@ -175,6 +174,7 @@ const handleImageChange = async (e) => {
         </button>
       </div>
     </form>
-  );};
+  );
+};
 
 export default MessageInput;
