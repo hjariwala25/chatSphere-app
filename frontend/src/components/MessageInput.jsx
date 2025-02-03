@@ -113,29 +113,29 @@ const MessageInput = () => {
     }
   };
   return (
-    <form onSubmit={handleSendMessage} className="p-2 bg-base-200">
+    <form onSubmit={handleSendMessage} className="p-2 sm:p-4 bg-base-200">
       {/* Image Preview */}
       {imagePreview && (
-        <div className="mb-3 flex items-center gap-2">
+        <div className="mb-2 sm:mb-3 flex items-start">
           <div className="relative">
             <img
               src={imagePreview}
               alt="Preview"
-              className="w-32 h-32 object-cover rounded-lg border border-zinc-700"
+              className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-lg border border-zinc-700"
             />
             <button
               onClick={removeImage}
-              className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-base-300
-              flex items-center justify-center"
+              className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-base-300 
+              flex items-center justify-center shadow-lg"
               type="button"
             >
-              <X className="size-4" />
+              <X className="size-3 sm:size-4" />
             </button>
           </div>
         </div>
       )}
-
-      <div className="flex items-center gap-2">
+  
+      <div className="flex items-center gap-1 sm:gap-2">
         <input
           type="file"
           ref={fileInputRef}
@@ -143,33 +143,33 @@ const MessageInput = () => {
           className="hidden"
           accept="image/*"
         />
-
+  
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className={`btn btn-circle btn-sm
-    ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
+          className={`btn btn-circle btn-sm sm:btn-md
+          ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
         >
-          <Image className="size-5" />
+          <Image className="size-4 sm:size-5" />
         </button>
-
+  
         <input
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Type a message..."
-          className="flex-1 bg-base-100 rounded-full px-4 py-2 focus:outline-none"
+          className="flex-1 bg-base-100 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base focus:outline-none"
         />
-
+  
         <button
           type="submit"
           disabled={isSending || (!text.trim() && !imagePreview)}
-          className="btn btn-circle btn-primary btn-sm"
+          className="btn btn-circle btn-sm sm:btn-md btn-primary"
         >
           {isSending ? (
-            <span className="loading loading-spinner"></span>
+            <span className="loading loading-spinner size-4 sm:size-5"></span>
           ) : (
-            <Send className="size-5" />
+            <Send className="size-4 sm:size-5" />
           )}
         </button>
       </div>
