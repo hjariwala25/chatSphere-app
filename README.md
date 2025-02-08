@@ -17,7 +17,7 @@ ChatSphere is a modern, real-time chat application built with <strong>Node.js, E
 - Modern UI: Built with Tailwind CSS and DaisyUI, featuring 32 theme options.
 -  Smart Notifications : Real-time alerts with react-hot-toast.
 
----
+
 
 ## 🛠Tech Stack
 
@@ -37,16 +37,16 @@ ChatSphere is a modern, real-time chat application built with <strong>Node.js, E
 - Cloudinary for efficient media handling
 
 
----
 
-## Getting Started
+## ◈ Getting Started
 
-### Prerequisites
+###  Prerequisites
 - **Node.js (v14+)**
 - **MongoDB (local/Atlas)**
 - **npm package manager**
 
-### Installation
+## ◈ Installation
+
 
 #### ❯   Clone the Repository
 ```bash
