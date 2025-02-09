@@ -38,14 +38,14 @@ ChatSphere is a modern, real-time chat application built with <strong>Node.js, E
 
 
 
-## ◈ Getting Started
+##  Getting Started
 
 ###  Prerequisites
 - **Node.js (v14+)**
 - **MongoDB (local/Atlas)**
 - **npm package manager**
 
-## ◈ Installation
+##  Installation
 
 
 #### ❯   Clone the Repository
